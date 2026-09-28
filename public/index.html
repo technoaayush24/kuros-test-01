@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Heavy Frontend App</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .loading { background: #fff3cd; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Heavy Frontend Test App</h1>
+        <div class="card">
+            <h2>API Tests</h2>
+            <button onclick="testCompute()">Test Heavy Compute</button>
+            <button onclick="testData()">Load Data Grid</button>
+            <button onclick="stressTest()">Run Stress Test</button>
+            <div id="status" class="status"></div>
+        </div>
+        <div class="card">
+            <h2>Data Grid</h2>
+            <div id="grid" class="grid"></div>
+        </div>
+    </div>
+    <script>
+        async function testCompute() {
+            document.getElementById("status").className = "status loading";
+            document.getElementById("status").textContent = "Computing...";
+            const start = Date.now();
+            const res = await fetch("/api/compute");
+            const data = await res.json();
+            document.getElementById("status").className = "status success";
+            document.getElementById("status").textContent = `Computed in ${Date.now() - start}ms: ${data.hash.slice(0,20)}...`;
+        }
+        
+        async function testData() {
+            document.getElementById("status").className = "status loading";
+            document.getElementById("status").textContent = "Loading data...";
+            const res = await fetch("/api/data");
+            const data = await res.json();
+            const grid = document.getElementById("grid");
+            grid.innerHTML = data.slice(0, 100).map(item => 
+                `<div class="card"><b>${item.name}</b><br>Value: ${item.value.toFixed(4)}</div>`
+            ).join("");
+            document.getElementById("status").className = "status success";
+            document.getElementById("status").textContent = `Loaded ${data.length} items`;
+        }
+        
+        async function stressTest() {
+            document.getElementById("status").className = "status loading";
+            document.getElementById("status").textContent = "Running stress test...";
+            const promises = [];
+            for (let i = 0; i < 50; i++) {
+                promises.push(fetch("/api/compute"));
+            }
+            await Promise.all(promises);
+            document.getElementById("status").className = "status success";
+            document.getElementById("status").textContent = "Stress test complete - 50 requests";
+        }
+    </script>
+</body>
+</html>
